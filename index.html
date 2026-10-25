@@ -28,6 +28,8 @@
     .search-button { min-width:150px; border:0; border-radius:13px; background:var(--green); color:white; font-weight:750; cursor:pointer }
     .search-button:hover { background:#10583c }
     .controls { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:22px 2px 14px; color:var(--muted); font-size:13px }
+    .live-note { margin:10px 4px 0; color:var(--muted); font-size:12px }
+    .live-note strong { color:var(--green) }
     .retailer-count { font-weight:700; color:var(--ink) }
     .clear-button { border:0; background:none; color:var(--green); font-size:13px; font-weight:700; cursor:pointer }
     .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px }
@@ -69,22 +71,23 @@
         <h1 id="title">Find the right price for your next buy.</h1>
         <p class="intro">Search a product across popular Portuguese retailers, check their current offers, and keep the prices together in one place.</p>
       </div>
-      <aside class="hero-aside"><strong>How it works</strong>Open each shop’s live search, confirm the exact product and delivery price, then enter the price here. Your comparison stays saved on this device.</aside>
+      <aside class="hero-aside"><strong>Live prices</strong>Search KuantoKusta’s official results for current offers from multiple shops. Open a listing there to confirm the exact product, seller and delivery cost.</aside>
     </section>
 
     <form class="search-panel" id="search-form">
       <label class="search-wrap" for="product"><span class="search-icon" aria-hidden="true">⌕</span><input id="product" name="product" placeholder="What are you looking for? e.g. Sony WH-1000XM5" autocomplete="off" required></label>
-      <button class="search-button" type="submit">Compare prices <span aria-hidden="true">→</span></button>
+      <button class="search-button" type="submit">Get live prices <span aria-hidden="true">→</span></button>
     </form>
+    <div class="live-note"><strong>Live results by KuantoKusta</strong> · Opens in a new tab when you search.</div>
 
-    <div class="controls"><div><span class="retailer-count">8 shops</span> <span>· Search results open in a new tab</span></div><button class="clear-button" id="clear-prices" type="button">Clear saved prices</button></div>
+    <div class="controls"><div><span class="retailer-count">8 shops</span> <span>· Optional local price tracker</span></div><button class="clear-button" id="clear-prices" type="button">Clear saved prices</button></div>
     <section class="grid" id="retailers" aria-live="polite"></section>
     <div class="empty" id="empty">Add prices from retailer pages to see your best offer.</div>
     <section class="summary" aria-live="polite">
       <div><div class="summary-title" id="summary-title">Your comparison is ready</div><div class="summary-copy" id="summary-copy">Search a product, then add the prices you find.</div></div>
       <div class="summary-value" id="summary-value">—</div>
     </section>
-    <footer>Prices are entered by you from retailer pages and are not fetched automatically. Check product variant, delivery fees, stock and seller before buying.</footer>
+    <footer>KuantoKusta provides the live offers in its own search page. The optional tracker below stores prices you enter on this device. Check product variant, delivery fees, stock and seller before buying.</footer>
   </main>
   <script>
     const shops = [
@@ -104,6 +107,7 @@
     const productInput=document.querySelector('#product');
     function loadSaved(){ try { return JSON.parse(localStorage.getItem(storageKey)||'{}'); } catch { return {}; } }
     function searchUrl(shop){ return 'https://www.google.com/search?q='+encodeURIComponent('site:'+shop.domain+' '+currentProduct); }
+    function kuantoKustaUrl(product){ return 'https://www.kuantokusta.pt/search?q='+encodeURIComponent(product); }
     function euro(value){ return new Intl.NumberFormat('pt-PT',{style:'currency',currency:'EUR'}).format(value); }
     function pricesForProduct(){ return saved[currentProduct.toLocaleLowerCase()]||{}; }
     function render(){
@@ -134,7 +138,7 @@
       if(value&&Number(value)>0)saved[key][shopId]=Number(value);else delete saved[key][shopId];
       localStorage.setItem(storageKey,JSON.stringify(saved));render();
     }
-    document.querySelector('#search-form').addEventListener('submit',event=>{event.preventDefault();currentProduct=productInput.value.trim();if(!currentProduct)return;render();document.querySelector('#retailers').scrollIntoView({behavior:'smooth',block:'start'});});
+    document.querySelector('#search-form').addEventListener('submit',event=>{event.preventDefault();currentProduct=productInput.value.trim();if(!currentProduct)return;window.open(kuantoKustaUrl(currentProduct),'_blank','noopener,noreferrer');render();document.querySelector('#retailers').scrollIntoView({behavior:'smooth',block:'start'});});
     document.querySelector('#clear-prices').addEventListener('click',()=>{if(currentProduct){delete saved[currentProduct.toLocaleLowerCase()];localStorage.setItem(storageKey,JSON.stringify(saved));render();}});
     productInput.value='Sony WH-1000XM5';currentProduct=productInput.value;render();
   </script>
